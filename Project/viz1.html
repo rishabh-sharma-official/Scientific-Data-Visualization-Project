@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Population Donut Chart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .details {
+      flex: 1;
+      padding: 20px;
+      border-right: 1px solid #ccc;
+    }
+
+    .details h2 {
+      margin-top: 0;
+    }
+
+    .chart-container {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      margin-left: 20px;
+      position: relative; /* Added */
+    }
+
+    .chart {
+      margin-bottom: 20px;
+    }
+
+    .tooltip {
+      position: absolute;
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      pointer-events: none;
+      visibility: hidden;
+      border-radius: 4px;
+    }
+
+    .legend-container {
+      flex: 1; /* Added */
+      position: absolute; /* Added */
+      top: 0; /* Added */
+      right: 20px; /* Added */
+      max-height: 100%; /* Added */
+      overflow-y: auto; /* Added */
+      padding: 10px; /* Added */
+      background-color: #f9f9f9; /* Added */
+      border: 1px solid #ddd; /* Added */
+      border-radius: 5px; /* Added */
+    }
+
+    .legend-item {
+      margin-bottom: 5px;
+    }
+
+    .legend rect {
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+    }
+
+    .highlighted {
+      fill: yellow !important;
+    }
+
+    .fade {
+      opacity: 0.5;
+    }
+
+    .label-line {
+      fill: none;
+      stroke: #999;
+      stroke-opacity: 0.5;
+      stroke-width: 1.5px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 10vh;
+      background-color: lightgreen;
+      font-family: 'Dancing Script', cursive;
+    }
+
+    /* Animation for dropdown */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    select {
+      animation: slideIn 0.5s ease forwards;
+    }
+
+    /* Dialog box styles */
+    .dialog {
+      position: absolute;
+      background-color: white;
+      border: 1px solid black;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <p class="title">Population Growth Information</p>
+  </div>
+  <div class="container">
+    <div class="dialog" id="dialog">
+      <h2>Details</h2>
+      <div id="country-info">
+        <p><strong>Name:</strong> <span id="country-name"></span></p>
+        <p><strong>Population:</strong> <span id="population"></span></p>
+        <p><strong>Growth Rate:</strong> <span id="growth-rate"></span></p>
+        <p><strong>World Percentage:</strong> <span id="world-percentage"></span></p>
+        <p><strong>Land Area:</strong> <span id="land-area"></span></p>
+        <p><strong>Density:</strong> <span id="density"></span></p>
+      </div>
+    </div>
+    <div class="chart-container">
+      <div class="chart">
+        <div>
+          <label for="year-select">Select Year:</label>
+          <select id="year-select">
+            <option value="population 1980">1980</option>
+            <option value="population 2000">2000</option>
+            <option value="population 2010">2010</option>
+            <option value="population 2022" selected>2022</option>
+            <option value="population 2023">2023</option>
+            <option value="population 2030">2030</option>
+            <option value="population 2050">2050</option>
+          </select>
+        </div>
+        <div id="chart-container" style="position: relative;">
+          <svg id="chart" width="1235" height="570"></svg> <!-- Reduced size by 5% -->
+          <div class="tooltip" id="tooltip"></div>
+          <div class="dialog" id="dialog"></div>
+        </div>
+      </div>
+      <div class="legend-container" id="legend-container">
+        <div id="legend" class="legend-scroll"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Set up the SVG canvas
+    const svg = d3.select("#chart"),
+          width = +svg.attr("width"),
+          height = +svg.attr("height"),
+          radius = Math.min(width, height) / 3;
+
+    // Add filter for glow effect
+    const defs = svg.append("defs");
+    const filter = defs.append("filter")
+                       .attr("id", "glow");
+    filter.append("feGaussianBlur")
+          .attr("stdDeviation", "3.5")
+          .attr("result", "coloredBlur");
+    const feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode")
+           .attr("in", "coloredBlur");
+    feMerge.append("feMergeNode")
+           .attr("in", "SourceGraphic");
+
+    const g = svg.append("g")
+                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    let currentHighlightedCountry = null;
+
+    // Function to update the chart title with the selected year in bold
+    function updateChartTitle(selectedYear) {
+      const chartTitle = svg.select(".chart-title");
+      chartTitle.html(`<tspan font-weight="bold">${selectedYear}</tspan> Population of Countries`);
+    }
+
+    // Function to update the chart based on selected year
+    function updateChart(selectedYear) {
+      // Fetch data from CSV
+      d3.csv("https://gist.githubusercontent.com/rishabh-sharma-official/12c4f100ec5b80404e2bb56f0802f926/raw/5e086b1fcad03f2920329b763edf773da69412ef/gistfile1.txt").then(function(data) {
+        const sumPopulation = d3.sum(data, d => +d[selectedYear]);
+
+        // Define color scale
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+        // Define arc generator
+        const arc = d3.arc()
+                      .innerRadius(radius * 0.8) // Set inner radius
+                      .outerRadius(radius); // Set outer radius
+
+        // Define pie generator
+        const pie = d3.pie()
+                      .sort(null)
+                      .value(d => +d[selectedYear]);
+
+        // Remove existing paths
+        g.selectAll(".arc").remove();
+        g.selectAll(".label-line").remove();
+
+        // Append new paths
+        const arcs = g.selectAll(".arc")
+                      .data(pie(data))
+                      .enter().append("g")
+                      .attr("class", "arc");
+
+        arcs.append("path")
+            .attr("d", arc)
+            .attr("fill", d => color(d.data.country))
+            .on("mouseover", function(event, d) {
+              const tooltip = document.getElementById("tooltip");
+              tooltip.innerHTML = `${d.data.country}: ${d.data[selectedYear]}`;
+              tooltip.style.visibility = "visible";
+              tooltip.style.left = (event.pageX - tooltip.offsetWidth / 2) + "px"; // Adjust tooltip position
+              tooltip.style.top = (event.pageY - tooltip.offsetHeight - 10) + "px"; // Adjust tooltip position
+
+              // Show country info
+              displayCountryInfo(d.data, selectedYear);
+            })
+            .on("mousemove", function(event) {
+              const tooltip = document.getElementById("tooltip");
+              tooltip.style.left = (event.pageX - tooltip.offsetWidth / 2) + "px"; // Adjust tooltip position
+              tooltip.style.top = (event.pageY - tooltip.offsetHeight - 10) + "px"; // Adjust tooltip position
+            })
+            .on("mouseout", function() {
+              const tooltip = document.getElementById("tooltip");
+              tooltip.style.visibility = "hidden";
+            })
+            .on("click", function(event, d) {
+              displayCountryInfo(d.data, selectedYear);
+            })
+            .on("mouseenter", function(event, d) {
+              highlightCountry(d.data.country);
+            })
+            .on("mouseleave", function(event, d) {
+              resetHighlight();
+            });
+        // Update chart title
+        updateChartTitle(selectedYear);
+
+        // Update legend
+        updateLegend(data, color, selectedYear);
+      });
+    }
+
+    // Function to update the legend
+    function updateLegend(data, color, selectedYear) {
+      const legend = d3.select("#legend");
+      legend.html("");
+      const legendItems = legend.selectAll(".legend-item")
+                               .data(data)
+                               .enter().append("div")
+                               .attr("class", "legend-item")
+                               .on("click", function(event, d) {
+                                 highlightCountry(d.country);
+                                 displayCountryInfo(d, selectedYear); // Display country info on click
+                               });
+      legendItems.append("div")
+                 .attr("class", "legend")
+                 .style("color", d => color(d.country))
+                 .text(d => d.country);
+      legendItems.append("div")
+                 .attr("class", "legend")
+                 .style("background-color", d => color(d.country))
+                 .style("width", "10px")
+                 .style("height", "10px")
+                 .style("display", "inline-block");
+    }
+
+    // Function to display country information in a dialog box
+    function displayCountryInfo(country, selectedYear) {
+      const dialog = document.getElementById("dialog");
+      dialog.innerHTML = `
+        <p><strong>Name of the country:</strong> ${country.country}</p>
+        <p><strong>Population:</strong> ${country[selectedYear]}</p>
+        <p><strong>Growth Rate:</strong> ${country.growthRate}</p>
+        <p><strong>World Percentage:</strong> ${country.worldPercentage}</p>
+        <p><strong>Land Area:</strong> ${country.area}</p>
+        <p><strong>Density:</strong> ${country.density}</p>
+      `;
+      dialog.style.display = "block";
+    }
+
+    // Function to highlight the selected country and fade others
+    function highlightCountry(country) {
+      const arcs = d3.selectAll(".arc");
+      arcs.classed("fade", d => d.data.country !== country);
+      arcs.filter(d => d.data.country === country).classed("highlighted", true);
+      currentHighlightedCountry = country;
+    }
+
+    // Function to reset highlighting
+    function resetHighlight() {
+      d3.selectAll(".arc").classed("fade", false);
+      if (currentHighlightedCountry) {
+        d3.selectAll(".arc").filter(d => d.data.country === currentHighlightedCountry).classed("highlighted", false);
+        currentHighlightedCountry = null;
+      }
+    }
+
+    // Initial call to update chart with default year
+    updateChart("population 2022");
+
+    // Add chart title
+    svg.append("text")
+       .attr("class", "chart-title")
+       .attr("x", (width / 2))
+       .attr("y", 30)
+       .attr("text-anchor", "middle")
+       .style("font-size", "20px")
+       .style("font-family", "Arial, sans-serif")
+       .html("");
+
+    // Event listener for year selection change
+    document.getElementById("year-select").addEventListener("change", function() {
+      const selectedYear = this.value;
+      updateChart(selectedYear);
+    });
+
+  </script>
+</body>
+</html>

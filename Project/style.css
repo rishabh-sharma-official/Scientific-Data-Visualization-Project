@@ -1,0 +1,47 @@
+.hoverable {
+    background-color: #ddd;
+    transition: background-color 0.2s ease-in-out;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap');
+
+
+.hoverable:hover {
+    background-color: lightgreen;
+}
+
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 15vh;
+    width: 100%;
+    background-color: rgb(144, 238, 144);
+    font-family: 'Dancing Script', cursive;
+  }
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    grid-gap: 10px;
+  }
+  
+  .grid-item-3x3 {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .nav {
+    display: flex;
+    flex: 1 1 20%;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+  }
+
+  .grid-container-DB {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-gap: 10px;
+  }

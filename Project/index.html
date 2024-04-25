@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Data Visualization</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-image: url("Covid image svg.svg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            position: relative;
+        }
+
+       .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 15vh;
+            width: 100%;
+            background-color: rgba(144, 238, 144, 0.779);
+            font-family: 'Dancing Script', cursive;
+          }
+        
+
+        h1,
+        h2 {
+            color: #060505;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #000000;
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: right;
+            height: 25vh;
+            background-color: rgb(243, 113, 113);
+            font-family: 'Dancing Script', cursive;
+        }
+
+       .author {
+            color: #ccc;
+            margin-bottom: 30px;
+            font-size: 20px;
+            background-color: rgba(32, 32, 32, 0.599);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: right;
+            height: 13vh;
+            width: 40vh;
+            font-family: 'Dancing Script', cursive;
+            border-radius: 5px;
+        }
+
+       .get-started-btn {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+       .get-started-btn:hover {
+            background-color: #3e8e41;
+        }
+
+       .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            grid-gap: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+       .grid-item {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            font-size: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Scientific Data Visualization - Spring 2024<br>
+            Population Density Impact On Spread Of COVID 19</h1>
+        </div>
+        <p>The spread of COVID-19 has been significantly influenced by population density, with higher-density areas experiencing more rapid transmission due to increased contact between individuals. Urban centers, characterized by crowded living conditions and frequent social interactions, have emerged as hotspots for the virus. However, the relationship between population density and COVID-19 transmission is nuanced, as other factors such as healthcare infrastructure and public health measures also play crucial roles. While densely populated countries face unique challenges, successful containment efforts have been seen in some regions through rigorous testing, contact tracing, and vaccination campaigns. Understanding these dynamics is essential for developing effective strategies to mitigate the impact of the pandemic globally.</p>
+        <p class="author">Rishabh Sharma <br> Nikhila Pogula <br> Anirudh Karanam</p>
+        <a href="homepage.html" class="get-started-btn">Get Started</a>
+    </div>
+</body>
+</html>

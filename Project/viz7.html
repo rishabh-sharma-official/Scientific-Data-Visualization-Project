@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Visualization</title>
+    <style>
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 15vh;
+            width: 100%;
+            background-color: rgb(144, 238, 144);
+            font-family: 'Dancing Script', cursive;
+          }
+
+          .tableauPlaceholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+        }
+        .iframe-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Adjust as needed */
+        }
+
+        .iframe-container iframe {
+            width: 1140px;
+            height: 541.25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <p class="title">Population Density and Medical Help Availability Charts</p>
+      </div>
+      <div class="iframe-container">
+        <iframe title="Vertical Stacked Bar Viz" src="https://app.powerbi.com/reportEmbed?reportId=e0de0b56-954c-4e6b-92f8-a644d90d55bc&autoAuth=true&ctid=70de1992-07c6-480f-a318-a1afcba03983" frameborder="0" allowFullScreen="true"></iframe>
+    </div>
+</html>
+
